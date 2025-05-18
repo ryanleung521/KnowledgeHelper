@@ -1,0 +1,14 @@
+The knowledges point will be stored in a tree
+Application: 
+quick search of frequently used data, digital library
+when i type, sql syntax, the node of sql syntax will be found and its children data are found and displayed
+the content of the node can be added and removed easily
+tag is a good system to retrieve data from different subtree but shares similarities
+also enable search by text, source etc
+open source immediately (source is a class where different things are processed by different sub-class to open different source)
+allow sources to be added
+
+trees: 
+node: knowledge points 
+content: children 
+parent node: node
