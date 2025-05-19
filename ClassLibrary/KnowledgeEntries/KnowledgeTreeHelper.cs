@@ -16,7 +16,13 @@ namespace ClassLibrary.KnowledgeEntries
         public static KnowledgeEntry root_node = new RootEntry();
         public static List<KnowledgeEntry> EntryList = new List<KnowledgeEntry>();
 
-        //Good Functions
+        //Init
+        public static void init()
+        {
+            EntryList.Add(root_node);
+        }
+        
+        //Basic Functions
         public static string GetNodeText(KnowledgeEntry node)
         {
             string parent_node = "";
@@ -45,7 +51,7 @@ namespace ClassLibrary.KnowledgeEntries
             }
             else
             {
-                children_node_id.Substring(0, children_node_id.Length - 2);
+                children_node_id = children_node_id.Substring(0, children_node_id.Length - 2);
             }
 
             //Generate Text
@@ -67,8 +73,14 @@ namespace ClassLibrary.KnowledgeEntries
             }
             return nodetext;
         }
+        private static void AddNewNodeToTree(KnowledgeEntry new_node, KnowledgeEntry parent_node)
+        {
+            new_node.parent_node = parent_node;
+            parent_node.children_nodes.Add(new_node);
+            EntryList.Add(new_node);
+        }
 
-        //Bad Functions
+        //CLI functions
         public static void AddNewNodeFromCLI(string json_text, KnowledgeEntry parent_node)
         {
             KnowledgeEntry new_node = CreateNewNodeBasedOnJson(json_text);
@@ -78,10 +90,6 @@ namespace ClassLibrary.KnowledgeEntries
         {
             return JsonConvert.DeserializeObject<KnowledgeEntry>(json_text);
         }
-        private static void AddNewNodeToTree(KnowledgeEntry new_node, KnowledgeEntry parent_node)
-        {
-            new_node.parent_node = parent_node;
-            parent_node.children_nodes.Add(new_node);
-        }
+        
     }
 }
