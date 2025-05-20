@@ -1,4 +1,6 @@
-﻿using ClassLibrary.KnowledgeEntries;
+﻿using ClassLibrary.DB_Interaction;
+using ClassLibrary.KnowledgeEntries;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.ComponentModel.Design;
@@ -14,6 +16,10 @@ namespace TestCLI
         static void Main(string[] args)
         {
             KnowledgeTreeHelper.init();
+            CLI_DB db = new CLI_DB();
+            db.Init();
+
+            DB_Operation.AddNewEntry(new EmptyEntry);
 
             while (true)
             {
