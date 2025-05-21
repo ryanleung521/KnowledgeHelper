@@ -19,7 +19,7 @@ namespace TestCLI
             CLI_DB db = new CLI_DB();
             db.Init();
 
-            DB_Operation.AddNewEntry(new EmptyEntry);
+            DB_Operation.BuildTree();
 
             while (true)
             {
