@@ -39,7 +39,7 @@ namespace TestCLI.Migrations
 
                     b.HasKey("EID");
 
-                    b.ToTable("Entries");
+                    b.ToTable("Entries", (string)null);
                 });
 
             modelBuilder.Entity("ClassLibrary.DB_Interaction.db_Relationship", b =>
@@ -52,7 +52,7 @@ namespace TestCLI.Migrations
 
                     b.HasKey("PID", "CID");
 
-                    b.ToTable("Relationships");
+                    b.ToTable("Relationships", (string)null);
                 });
 #pragma warning restore 612, 618
         }

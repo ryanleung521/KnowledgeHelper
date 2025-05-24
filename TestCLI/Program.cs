@@ -23,13 +23,16 @@ namespace TestCLI
 
             while (true)
             {
-                Console.WriteLine("Enter a command (cr, rm, md, mv) or 'exit' to quit:");
+                Console.WriteLine("Enter a command (nv, cr, rm, md, mv) or 'exit' to quit:");
                 string command = Console.ReadLine();
 
                 if (command == "exit") break;
 
                 switch (command)
                 {
+                    case "nv":
+                        Navigate_Tree();
+                        break;
                     case "cr":
                         CreateNewNode();
                         break;
@@ -50,18 +53,15 @@ namespace TestCLI
             Console.WriteLine(KnowledgeTreeHelper.GetAllNodeText(KnowledgeTreeHelper.root_node));
         }
         
-        static List<string> nav_keys = new List<string>() {"cr", "sl", "rm", "md", "mv"};
+        static List<string> nav_keys = new List<string>() {"nv", "cr", "sl", "rm", "md", "mv"};
         static void CreateNewNode()
         {
-             int id;
              string title;
              string content_text;
              KnowledgeEntry parent_node;
              List<string> tags = new List<string>();
 
             Console.WriteLine("Current Node: ");
-            Console.WriteLine("id");
-            Int32.TryParse(Console.ReadLine(), out id);
             Console.WriteLine("title");
             title = Console.ReadLine();
             Console.WriteLine("content_text");
@@ -71,7 +71,6 @@ namespace TestCLI
 
             var node = new
             {
-                id = id,
                 title = title,
                 content_text = content_text,
                 parent_node = parent_node

@@ -14,13 +14,14 @@ namespace ClassLibrary.KnowledgeEntries
         //This static class helps to create and maintain a knowledge tree
 
         //Properties
-        public static KnowledgeEntry root_node = new RootEntry();
+        public static KnowledgeEntry root_node;
         public static List<KnowledgeEntry> EntryList = new List<KnowledgeEntry>();
 
         //Init
         public static void init()
         {
-            EntryList.Add(root_node);
+            DB_Operation.BuildTree();
+            root_node = EntryList[0];
         }
         
         //Basic Functions
@@ -30,7 +31,7 @@ namespace ClassLibrary.KnowledgeEntries
             string children_node_id = "";
 
             //set parent node text when the node is root
-            if (node == root_node)
+            if (node is RootEntry)
             {
                 parent_node = "This is the Root Node, there is the parent node";
             }
@@ -79,6 +80,7 @@ namespace ClassLibrary.KnowledgeEntries
             new_node.parent_node = parent_node;
             parent_node.children_nodes.Add(new_node);
             EntryList.Add(new_node);
+            DB_Operation.AddNewEntry(new_node);
         }
 
         //CLI functions

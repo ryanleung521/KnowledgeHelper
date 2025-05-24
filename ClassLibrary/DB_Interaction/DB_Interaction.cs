@@ -65,7 +65,6 @@ namespace ClassLibrary.DB_Interaction
         {
             db_entry = new db_Entry()
             {
-                EID = entry.id,
                 Title = entry.title,
                 Content = entry.content_text
             };
@@ -75,7 +74,7 @@ namespace ClassLibrary.DB_Interaction
                 db_relation = new db_Relationship()
                 {
                     PID = entry.parent_node.id,
-                    CID = entry.id
+                    CID = db.Entries.Count() //current entry id
                 };
             }
             else
@@ -97,22 +96,52 @@ namespace ClassLibrary.DB_Interaction
             ToDBForm(entry, out db_entry, out db_relation);
 
             db.Add(db_entry);
+            db.SaveChanges();
             db.Add(db_relation);
-
             db.SaveChanges();
         }
 
         //build tree method
         public static void BuildTree()
         {
+            //Place all entries in a list
+            //Get all relationships and add them to each node of the tree
+            //Relationship: Parent, Child
+            //For every record: Parent: Child Node add parent, Child: Parent Node add child
             Setup();
-            Console.WriteLine(db.Entries.Count());
+            
+            //Fill the list
+            for (int i = 0; i < db.Entries.Count(); i++)
+            {
+                KnowledgeTreeHelper.EntryList.Add(GetEntry(i));
+            }
+
+            //Get all relationships
+            List<db_Relationship> relationships = GetRelationships();
+
+            //Add relationships to the tree
+            foreach (var relationship in relationships)
+            {
+                KnowledgeEntry parent = KnowledgeTreeHelper.EntryList.FirstOrDefault(e => e.id == relationship.PID);
+                KnowledgeEntry child = KnowledgeTreeHelper.EntryList.FirstOrDefault(e => e.id == relationship.CID);
+                if (parent != null && child != null)
+                {
+                    parent.children_nodes.Add(child);
+                    child.parent_node = parent;
+                }
+            }
         }
         private static KnowledgeEntry GetEntry(int id)
         {
             Setup();
             db_Entry db_entry = db.Find<db_Entry>(id);
             if (db_entry == null) return null;
+
+            //Root Entry
+            if (db_entry.EID == 0)
+            {
+                return new RootEntry();
+            }
 
             KnowledgeEntry entry = new KnowledgeEntry()
             {
@@ -125,6 +154,16 @@ namespace ClassLibrary.DB_Interaction
             };
 
             return entry;
+        }
+        private static List<db_Relationship> GetRelationships()
+        {
+            return db.Relationships.ToList();
+        }
+
+        public static void ResetIdentityIncrement(int new_start_value)
+        {
+            Setup();
+            db.Database.ExecuteSqlRaw($"DBCC CHECKIDENT ('Entries', RESEED, {new_start_value})");
         }
     }
 }
