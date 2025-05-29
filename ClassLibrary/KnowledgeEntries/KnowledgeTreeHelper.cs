@@ -31,7 +31,7 @@ namespace ClassLibrary.KnowledgeEntries
             string children_node_id = "";
 
             //set parent node text when the node is root
-            if (node is RootEntry)
+            if (IsRootNode(node))
             {
                 parent_node = "This is the Root Node, there is the parent node";
             }
@@ -61,7 +61,7 @@ namespace ClassLibrary.KnowledgeEntries
                 $"ID: {node.id}\n" +
                 $"Title: {node.title}\n" +
                 $"Content: {node.content_text}\n" +
-                $"Parent ID: {node.parent_node.id}\n" +
+                $"Parent ID: {parent_node}\n" +
                 $"Children ID: {children_node_id}\n";
 
             return text;
@@ -75,24 +75,26 @@ namespace ClassLibrary.KnowledgeEntries
             }
             return nodetext;
         }
-        private static void AddNewNodeToTree(KnowledgeEntry new_node, KnowledgeEntry parent_node)
+
+        public static bool IsRootNode(KnowledgeEntry entry)
         {
-            new_node.parent_node = parent_node;
-            parent_node.children_nodes.Add(new_node);
-            EntryList.Add(new_node);
-            DB_Operation.AddNewEntry(new_node);
+            return entry == root_node;
         }
 
-        //CLI functions
-        public static void AddNewNodeFromCLI(string json_text, KnowledgeEntry parent_node)
+        //Create/Move/Delete/Modify Nodes
+        public static void CreateEntry(string title, string content, KnowledgeEntry parent_node)
         {
-            KnowledgeEntry new_node = CreateNewNodeBasedOnJson(json_text);
-            AddNewNodeToTree(new_node, parent_node);
+            KnowledgeEntry new_entry = new KnowledgeEntry
+            {
+                title = title,
+                content_text = content,
+                parent_node = parent_node
+            };
+
+            EntryList.Add(new_entry);
+            parent_node.children_nodes.Add(new_entry);
+            DB_Operation.AddNewEntry(new_entry);
+            new_entry.id = EntryList.Count-1; 
         }
-        private static KnowledgeEntry CreateNewNodeBasedOnJson(string json_text)
-        {
-            return JsonConvert.DeserializeObject<KnowledgeEntry>(json_text);
-        }
-        
     }
 }

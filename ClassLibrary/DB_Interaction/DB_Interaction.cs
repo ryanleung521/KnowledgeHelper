@@ -68,7 +68,7 @@ namespace ClassLibrary.DB_Interaction
                 Title = entry.title,
                 Content = entry.content_text
             };
-            if (entry is not RootEntry)
+            if (! KnowledgeTreeHelper.IsRootNode(entry))
             {
                 //have parent node
                 db_relation = new db_Relationship()
@@ -87,7 +87,7 @@ namespace ClassLibrary.DB_Interaction
         public static void AddNewEntry(KnowledgeEntry entry)
         {
             //Root Node should not be added to the database
-            if (entry is RootEntry) return;
+            if (KnowledgeTreeHelper.IsRootNode(entry)) return;
 
             Setup(); 
 
