@@ -33,11 +33,11 @@ namespace ClassLibrary.KnowledgeEntries
             //set parent node text when the node is root
             if (IsRootNode(node))
             {
-                parent_node = "This is the Root Node, there is the parent node";
+                parent_node = "N/A";
             }
             else
             {
-                parent_node = node.parent_node.id.ToString();
+                parent_node = node.parent_node.title;
             }
 
             //get all children id 
@@ -58,11 +58,9 @@ namespace ClassLibrary.KnowledgeEntries
 
             //Generate Text
             string text =
-                $"ID: {node.id}\n" +
                 $"Title: {node.title}\n" +
                 $"Content: {node.content_text}\n" +
-                $"Parent ID: {parent_node}\n" +
-                $"Children ID: {children_node_id}\n";
+                $"Parent Entry: {parent_node}\n";
 
             return text;
         }

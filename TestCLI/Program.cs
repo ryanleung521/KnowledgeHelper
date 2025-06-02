@@ -1,10 +1,12 @@
 ﻿using ClassLibrary.DB_Interaction;
 using ClassLibrary.KnowledgeEntries;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.ComponentModel.Design;
 using System.Data;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -130,95 +132,72 @@ namespace TestCLI
         //UI tools for development
         static void Navigate_Tree(out KnowledgeEntry CurrentNode)
         {
-            //Show Root Info
-            //Show Child Title, ID, use id to select
-            //-1 to exit
-            //-2 back to current parent
-
-            //Declare Variables
-
-            //Node selection
             CurrentNode = KnowledgeTreeHelper.root_node;
-            int selection = 0;
 
-            //Indentation function
-            int depth = 0;
-            const string tab = "    ";
-
-            do
+            while (true)
             {
-                //return to the previous node
-                if (selection == -2)
+                //Display Current Details
+                DisplayCurrentNodeInfo(CurrentNode);
+                DisplayCurrentNodeChildren(CurrentNode);
+
+                //Selection
+                Console.WriteLine("Input sl to Select Current Node or Enter a number to access respective node");
+                Console.WriteLine("Enter -1 to leave the program. Enter -2 to Return to Parent Node. ");
+                string user_input = Console.ReadLine();
+
+                //Select Current Node
+                if (user_input == "sl")
                 {
-                    if (KnowledgeTreeHelper.IsRootNode(CurrentNode))
-                    {
-                        Console.WriteLine("THIS IS ROOT NODE!!!");
-                        break;
-                    }
-                    depth--;
-                    CurrentNode = CurrentNode.parent_node;
-                }
-                else
-                {
-                    //go to a deeper layer of nodes
-                    depth++;
-                    CurrentNode = KnowledgeTreeHelper.EntryList[selection];
+                    return;
                 }
 
-                //Display current node information
-                string CurrentNodeInfo = KnowledgeTreeHelper.GetNodeText(CurrentNode);
-                Console.WriteLine("Current Node:\n" + CurrentNodeInfo);
-                Console.WriteLine();
-                if (CurrentNode.children_nodes.Count != 0)
-                {
-                    Console.WriteLine("Children Nodes: ");
-                    foreach (KnowledgeEntry node in CurrentNode.children_nodes)
-                    {
-                        Console.WriteLine($"{GetIndentation(tab, depth)}ID {node.id}: {node.title}");
-                    }
-                }
-
-                //Input id for new node
-                string input = Console.ReadLine();
-                Console.WriteLine();
-
-                //select
-                if (input == "sl")
-                {
-                    //already assigned current node as out value 
-                    return; 
-                }
-
-                //Parse and validate the selection
-                bool ParseSuccess = Int32.TryParse(input, out selection);
-                if (!ParseSuccess)
-                {
-                    Console.WriteLine("Parse Failed\n");
-                    selection = CurrentNode.id;
-                    continue;
-                }
-                if (selection == -1)
+                //Exit (-1)
+                if (user_input == "-1")
                 {
                     CurrentNode = new EmptyEntry();
-                    return; 
-                }
-                if (selection == -2)
-                {
-                    continue; 
+                    return;
                 }
 
-                if (selection < 0 || selection >= KnowledgeTreeHelper.EntryList.Count)
+                //Return to Parent Node (-2)
+                if (user_input == "-2")
                 {
-                    Console.WriteLine("out of bound\n");
-                    selection = CurrentNode.id;
+                    if (KnowledgeTreeHelper.IsRootNode(CurrentNode) == true)
+                    {
+                        return;
+                    }
+
+                    CurrentNode = CurrentNode.parent_node;
                     continue;
                 }
-                if (CurrentNode.children_nodes.Contains(KnowledgeTreeHelper.EntryList[selection]) == false)
+
+                //Select Children Node
+                KnowledgeEntry selected_entry;
+                try
                 {
-                    Console.WriteLine("it is not a child node of the current node\n");
+                    int selection = Convert.ToInt32(user_input);
+                    selected_entry = CurrentNode.children_nodes[selection - 1];
+                    CurrentNode = selected_entry;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Invalid Input");
                     continue;
                 }
-            } while (true); //Enter -1 to return directly
+            }
+        }
+        static void DisplayCurrentNodeInfo(KnowledgeEntry CurrentNode)
+        {
+            Console.WriteLine($"Current Node:\n");
+            Console.WriteLine(KnowledgeTreeHelper.GetNodeText(CurrentNode));
+        }
+        static void DisplayCurrentNodeChildren(KnowledgeEntry CurrentNode)
+        {
+            Console.WriteLine("Children Nodes: ");
+            for (int i = 0; i < CurrentNode.children_nodes.Count; i++)
+            {
+                Console.WriteLine($"{i+1}. {CurrentNode.children_nodes[i].title}");
+            }
+            Console.WriteLine();
         }
 
         //Identation
