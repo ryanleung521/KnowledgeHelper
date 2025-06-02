@@ -74,7 +74,7 @@ namespace ClassLibrary.DB_Interaction
                 db_relation = new db_Relationship()
                 {
                     PID = entry.parent_node.id,
-                    CID = db.Entries.Count() //current entry id
+                    CID = db.Entries.Max(r => r.EID) +1
                 };
             }
             else
@@ -132,7 +132,7 @@ namespace ClassLibrary.DB_Interaction
             Setup();
             
             //Fill the list
-            for (int i = 0; i < db.Entries.Count(); i++)
+            for (int i = 0; i < db.Entries.Max(e => e.EID)+1; i++)
             {
                 KnowledgeTreeHelper.EntryList.Add(GetEntry(i));
             }
@@ -143,8 +143,8 @@ namespace ClassLibrary.DB_Interaction
             //Add relationships to the tree
             foreach (var relationship in relationships)
             {
-                KnowledgeEntry parent = KnowledgeTreeHelper.EntryList.FirstOrDefault(e => e.id == relationship.PID);
-                KnowledgeEntry child = KnowledgeTreeHelper.EntryList.FirstOrDefault(e => e.id == relationship.CID);
+                KnowledgeEntry parent = KnowledgeTreeHelper.EntryList.Find(e => e.id == relationship.PID);
+                KnowledgeEntry child = KnowledgeTreeHelper.EntryList.Find(e => e.id == relationship.CID);
                 if (parent != null && child != null)
                 {
                     parent.children_nodes.Add(child);
@@ -156,7 +156,7 @@ namespace ClassLibrary.DB_Interaction
         {
             Setup();
             db_Entry db_entry = db.Find<db_Entry>(id);
-            if (db_entry == null) return null;
+            if (db_entry == null) return new EmptyEntry();
 
             //Root Entry
             if (db_entry.EID == 0)
