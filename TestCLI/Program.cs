@@ -95,7 +95,7 @@ namespace TestCLI
         {
             KnowledgeEntry targetentry;
             Navigate_Tree(out targetentry);
-            targetentry.parent_node.children_nodes.Remove(targetentry);
+            KnowledgeTreeHelper.RemoveEntry(targetentry);
         }
         static void ModifyNode()
         {

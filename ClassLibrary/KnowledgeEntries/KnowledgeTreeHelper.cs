@@ -96,5 +96,18 @@ namespace ClassLibrary.KnowledgeEntries
             DB_Operation.AddNewEntry(new_entry);
             new_entry.id = EntryList.Count-1; 
         }
+        public static void RemoveEntry (KnowledgeEntry entry)
+        {
+            if (IsRootNode(entry) == true)
+            {
+                Console.WriteLine("Cannot delete the root node!");
+                return; 
+            }
+
+            //Non-Root Node
+            entry.parent_node.children_nodes.Remove(entry);
+            EntryList.Remove(entry);
+            DB_Operation.DeleteEntry(entry);
+        }
     }
 }

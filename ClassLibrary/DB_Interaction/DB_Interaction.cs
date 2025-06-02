@@ -84,6 +84,7 @@ namespace ClassLibrary.DB_Interaction
             }
         }
 
+        //CRUD
         public static void AddNewEntry(KnowledgeEntry entry)
         {
             //Root Node should not be added to the database
@@ -98,6 +99,26 @@ namespace ClassLibrary.DB_Interaction
             db.Add(db_entry);
             db.SaveChanges();
             db.Add(db_relation);
+            db.SaveChanges();
+        }
+        public static void DeleteEntry (KnowledgeEntry entry)
+        {
+            if (KnowledgeTreeHelper.IsRootNode(entry)) return; //Cannot delete root node
+
+            Setup();
+
+            //Remove Entry Relationships from table Relationships
+            var db_relationships = db.Relationships.Where(a => a.PID == entry.id || a.CID == entry.id).ToList();
+            if (db_relationships.Count > 0)
+            {
+                db.RemoveRange(db_relationships); //Remove all relationships related to the entry
+                db.SaveChanges();
+            }
+
+            //Remove Entry from table Entries
+            var db_entry = db.Find<db_Entry>(entry.id);
+            if (db_entry == null) return; //Entry not found
+            db.Remove(db_entry); //Remove the entry from the database if found
             db.SaveChanges();
         }
 
