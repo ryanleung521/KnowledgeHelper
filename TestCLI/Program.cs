@@ -103,20 +103,25 @@ namespace TestCLI
         {
             KnowledgeEntry targetentry;
             Navigate_Tree(out targetentry);
-            string selection = Console.ReadLine();
-            Console.WriteLine("tt for title, ct for content");
-            string new_content = Console.ReadLine();
-            if (selection == "tt")
+
+            Console.WriteLine("\nSelected Node: \n\n" + KnowledgeTreeHelper.GetNodeText(targetentry));
+
+            Console.WriteLine("Enter nothing to keep the original information: ");
+            Console.Write("Title: ");
+            string new_title = Console.ReadLine().Trim();
+            Console.WriteLine("Content: ");
+            string new_content = Console.ReadLine().Trim();
+
+            if (new_title == string.Empty)
             {
-                targetentry.title = new_content;
-                return; 
+                new_title = targetentry.title;
             }
-            if (selection == "ct")
+            if (new_content == string.Empty)
             {
-                targetentry.content_text = new_content;
-                return;
+                new_content = targetentry.content_text;
             }
-            Console.WriteLine("Nope, invalid");
+
+            KnowledgeTreeHelper.ModifyEntry(targetentry, new_title, new_content);
         }
         static void MoveNode()
         {

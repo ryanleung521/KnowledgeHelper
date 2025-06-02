@@ -107,5 +107,16 @@ namespace ClassLibrary.KnowledgeEntries
             EntryList.Remove(entry);
             DB_Operation.DeleteEntry(entry);
         }
+        public static void ModifyEntry(KnowledgeEntry entry, string title, string content)
+        {
+            entry.title = title;
+            entry.content_text = content;
+
+            KnowledgeEntry new_entry = new KnowledgeEntry();
+            new_entry.title = title;
+            new_entry.content_text = content;
+
+            DB_Operation.ModifyEntry(entry, new_entry);
+        }
     }
 }

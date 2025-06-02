@@ -121,6 +121,14 @@ namespace ClassLibrary.DB_Interaction
             db.Remove(db_entry); //Remove the entry from the database if found
             db.SaveChanges();
         }
+        public static void ModifyEntry(KnowledgeEntry target_entry, KnowledgeEntry new_content)
+        {
+            Setup();
+            var db_targetEntry = db.Entries.Single(e => e.EID == target_entry.id);
+            db_targetEntry.Title = new_content.title;
+            db_targetEntry.Content = new_content.content_text;
+            db.SaveChanges();
+        }
 
         //build tree method
         public static void BuildTree()
