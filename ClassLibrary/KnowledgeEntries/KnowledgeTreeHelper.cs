@@ -91,8 +91,11 @@ namespace ClassLibrary.KnowledgeEntries
 
             EntryList.Add(new_entry);
             parent_node.children_nodes.Add(new_entry);
-            DB_Operation.AddNewEntry(new_entry);
-            new_entry.id = EntryList.Count-1; 
+
+            //BUG
+            int new_entry_id;
+            DB_Operation.AddNewEntry(new_entry, out new_entry_id);
+            new_entry.id = new_entry_id;
         }
         public static void RemoveEntry (KnowledgeEntry entry)
         {
@@ -117,6 +120,21 @@ namespace ClassLibrary.KnowledgeEntries
             new_entry.content_text = content;
 
             DB_Operation.ModifyEntry(entry, new_entry);
+        }
+        public static void MoveEntry(KnowledgeEntry target_entry, KnowledgeEntry new_parent_entry)
+        {
+            if (target_entry == new_parent_entry)
+            {
+                Console.WriteLine("Entries cant be moved under itself. ");
+                return;
+            }
+
+            var old_parent_entry = target_entry.parent_node;
+            old_parent_entry.children_nodes.Remove(target_entry);
+            new_parent_entry.children_nodes.Add(target_entry);
+            target_entry.parent_node = new_parent_entry;
+
+            DB_Operation.MoveEntry(target_entry, old_parent_entry, new_parent_entry);
         }
     }
 }

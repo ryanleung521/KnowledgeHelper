@@ -21,6 +21,9 @@ namespace TestCLI
             CLI_DB db = new CLI_DB();
             db.Init();
 
+            //DB_Operation.ResetIdentityIncrement(5);
+            //return;
+
             while (true)
             {
                 Console.WriteLine("Enter a command (nv, cr, rm, md, mv) or 'exit' to quit:");
@@ -125,13 +128,20 @@ namespace TestCLI
         }
         static void MoveNode()
         {
+            Console.WriteLine("Select the entry to be moved: \n"); 
             KnowledgeEntry targetentry;
             Navigate_Tree(out targetentry);
+            Console.WriteLine("\nEntry selected");
+            
+            Console.WriteLine("Select the destination entry for the entry to be moved to: ");
             KnowledgeEntry new_parent;
             Navigate_Tree(out new_parent);
-            targetentry.parent_node.children_nodes.Remove(targetentry);
-            targetentry.parent_node = new_parent;
-            targetentry.parent_node.children_nodes.Add(new_parent);
+            Console.WriteLine("Destination selected");
+
+            if (targetentry is not EmptyEntry && new_parent is not EmptyEntry)
+            {
+               KnowledgeTreeHelper.MoveEntry(targetentry, new_parent);
+            }
         }
 
         //UI tools for development

@@ -61,45 +61,30 @@ namespace ClassLibrary.DB_Interaction
             db = new KnowledgeDbContext(optionsBuilder.Options);
         }
 
-        private static void ToDBForm(KnowledgeEntry entry, out db_Entry db_entry, out db_Relationship db_relation)
-        {
-            db_entry = new db_Entry()
-            {
-                Title = entry.title,
-                Content = entry.content_text
-            };
-            if (! KnowledgeTreeHelper.IsRootNode(entry))
-            {
-                //have parent node
-                db_relation = new db_Relationship()
-                {
-                    PID = entry.parent_node.id,
-                    CID = db.Entries.Max(r => r.EID) +1
-                };
-            }
-            else
-            {
-                //no parent node
-                db_relation = null;
-            }
-        }
-
         //CRUD
-        public static void AddNewEntry(KnowledgeEntry entry)
+        public static void AddNewEntry(KnowledgeEntry entry, out int new_entry_id)
         {
+            new_entry_id = -1;
+
             //Root Node should not be added to the database
             if (KnowledgeTreeHelper.IsRootNode(entry)) return;
 
             Setup(); 
 
-            db_Entry db_entry;
-            db_Relationship db_relation;
-            ToDBForm(entry, out db_entry, out db_relation);
+            db_Entry db_entry = new db_Entry(); 
+            db_entry.Title = entry.title;
+            db_entry.Content = entry.content_text;
+            db.Entries.Add(db_entry);
+            db.SaveChanges();
 
-            db.Add(db_entry);
+            db_Relationship db_relation;
+            db_relation = new db_Relationship();
+            db_relation.PID = entry.parent_node.id;
+            db_relation.CID = db.Entries.Max(a => a.EID);
+            db.Relationships.Add(db_relation);
             db.SaveChanges();
-            db.Add(db_relation);
-            db.SaveChanges();
+
+            new_entry_id = db_relation.CID;
         }
         public static void DeleteEntry (KnowledgeEntry entry)
         {
@@ -108,13 +93,13 @@ namespace ClassLibrary.DB_Interaction
             Setup();
 
             //Remove Entry Relationships from table Relationships
-            var db_relationships = db.Relationships.Where(a => a.PID == entry.id || a.CID == entry.id).ToList();
-            if (db_relationships.Count > 0)
+            var db_relationships = db.Relationships.Where(a => a.PID == entry.id || a.CID == entry.id).ToArray();
+            if (db_relationships.Length > 0)
             {
                 db.RemoveRange(db_relationships); //Remove all relationships related to the entry
                 db.SaveChanges();
             }
-
+        
             //Remove Entry from table Entries
             var db_entry = db.Find<db_Entry>(entry.id);
             if (db_entry == null) return; //Entry not found
@@ -127,6 +112,22 @@ namespace ClassLibrary.DB_Interaction
             var db_targetEntry = db.Entries.Single(e => e.EID == target_entry.id);
             db_targetEntry.Title = new_content.title;
             db_targetEntry.Content = new_content.content_text;
+            db.SaveChanges();
+        }
+        public static void MoveEntry (KnowledgeEntry target_entry, KnowledgeEntry old_parent_entry, KnowledgeEntry new_parent_entry)
+        {
+            Setup();
+            var old_relation = db.Relationships.Single(a => a.PID == old_parent_entry.id && a.CID == target_entry.id);
+            if (old_relation != null)
+            {
+                db.Relationships.Remove(old_relation);
+                db.SaveChanges();
+            }
+
+            db_Relationship new_relation = new db_Relationship();
+            new_relation.PID = new_parent_entry.id;
+            new_relation.CID = target_entry.id;
+            db.Relationships.Add(new_relation);
             db.SaveChanges();
         }
 
