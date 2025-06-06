@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Reflection.PortableExecutable;
+using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,6 +18,8 @@ namespace ClassLibrary.DB_Interaction
     {
         public DbSet<db_Entry> Entries { get; set; }
         public DbSet<db_Relationship> Relationships { get; set; }
+        public DbSet< db_Tag> Tags { get; set; }
+        public DbSet<db_Tagging> Taggings { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -30,6 +34,14 @@ namespace ClassLibrary.DB_Interaction
             //For db_Relationship
             modelBuilder.Entity<db_Relationship>().
                 HasKey(r => new { r.PID, r.CID});
+
+            //For db_Tag
+            modelBuilder.Entity<db_Tag>().
+                HasKey(t => t.TID);
+
+            //For db_Tagging
+            modelBuilder.Entity<db_Tagging>().
+                HasKey(t => new { t.Entry, t.Tag });
         }
 
         public KnowledgeDbContext(DbContextOptions<KnowledgeDbContext> options) : base(options) { }
@@ -189,7 +201,97 @@ namespace ClassLibrary.DB_Interaction
         {
             return db.Relationships.ToList();
         }
+        
+        //Tagging System
+        public static void AddTagsFromDB()
+        {
+            Setup();
+            var TagList =  db.Tags.ToList();
+            foreach (var db_tag in TagList)
+            {
+                Tag tag = new Tag();
+                tag.TID = db_tag.TID;
+                tag.TagName = db_tag.TName;
 
+                TagHelper.TagList.Add(tag);
+            }
+
+            var TaggingList = db.Taggings.ToList();
+            foreach (var db_tagging in TaggingList)
+            {
+                var entry =  KnowledgeTreeHelper.GetEntry(db_tagging.Entry.EID);
+                var tag = TagHelper.GetTag(db_tagging.Tag.TID);
+                if (entry != null)
+                {
+                    entry.tags.Add(tag);
+                }
+            }
+        }
+
+        public static void AddTagToEntry(KnowledgeEntry entry, Tag tag)
+        {
+            Setup();
+
+            var tagging = GenerateDBTagging(entry, tag);
+            db.Taggings.Add(tagging);
+
+            db.SaveChanges();
+        }
+
+        public static void RemoveTagFromEntry (KnowledgeEntry entry, Tag tag)
+        {
+            Setup(); 
+
+            if (entry.tags.Contains(tag) == false)
+            {
+                return;
+            }
+
+            db_Tagging db_tagging = db.Taggings.Single(t => t.Tag.TID == tag.TID && t.Entry.EID == entry.id);
+            db.Taggings.Remove(db_tagging);
+
+            db.SaveChanges();
+        }
+
+        public static void AddNewTag(Tag tag)
+        {
+            Setup();
+            var db_tag = GenerateDBTag(tag);
+            db.Tags.Add(db_tag);
+            db.SaveChanges();
+        }
+        public static void RemoveTag(Tag tag)
+        {
+            Setup();
+
+            var db_tagging = db.Taggings.Where(t => t.Tag.TID == tag.TID).ToList();
+            db.Taggings.RemoveRange(db_tagging);
+            db.SaveChanges();
+
+            var db_tag = db.Tags.Find(tag.TID);
+            db.Tags.Remove(db_tag);
+            db.SaveChanges();
+        }
+
+        //Convert Objects to DB Version
+        private static db_Entry GenerateDBEntry(KnowledgeEntry entry)
+        {
+            return new db_Entry() {  EID = entry.id, Content = entry.content_text , Title = entry.title };
+        }
+        private static db_Relationship GenerateDBRelation(KnowledgeEntry parent, KnowledgeEntry child)
+        {
+            return new db_Relationship() { PID = parent.id, CID = child.id };
+        }
+        private static db_Tag GenerateDBTag(Tag tag)
+        {
+            return new db_Tag() { TID = tag.TID, TName = tag.TagName };
+        }
+        private static db_Tagging GenerateDBTagging(KnowledgeEntry entry,  Tag tag)
+        {
+            return new db_Tagging() { Entry = GenerateDBEntry(entry), Tag = GenerateDBTag(tag) };
+        }
+
+        //Misc Func
         public static void ResetIdentityIncrement(int new_start_value)
         {
             Setup();

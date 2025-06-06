@@ -92,7 +92,6 @@ namespace ClassLibrary.KnowledgeEntries
             EntryList.Add(new_entry);
             parent_node.children_nodes.Add(new_entry);
 
-            //BUG
             int new_entry_id;
             DB_Operation.AddNewEntry(new_entry, out new_entry_id);
             new_entry.id = new_entry_id;
@@ -135,6 +134,12 @@ namespace ClassLibrary.KnowledgeEntries
             target_entry.parent_node = new_parent_entry;
 
             DB_Operation.MoveEntry(target_entry, old_parent_entry, new_parent_entry);
+        }
+
+        //I/O
+        public static KnowledgeEntry GetEntry (int EID)
+        {
+            return EntryList.Find(e => e.id == EID);
         }
     }
 }

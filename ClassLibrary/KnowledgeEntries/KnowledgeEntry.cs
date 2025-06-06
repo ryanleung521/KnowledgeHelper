@@ -15,7 +15,7 @@ namespace ClassLibrary.KnowledgeEntries
         public string content_text { get; set; } = "";
         public KnowledgeEntry parent_node { get; set; }
         public List<KnowledgeEntry> children_nodes { get; set; } = new List<KnowledgeEntry>();
-        public List<string> tags { get; set; } = new List<string>();
+        public List<Tag> tags { get; set; } = new List<Tag>();
 
         public KnowledgeEntry() { }
         public KnowledgeEntry(int id, string title, string content_text, KnowledgeEntry parent_node, List<KnowledgeEntry> children_nodes, List<string> tags)

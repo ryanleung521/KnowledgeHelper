@@ -58,22 +58,6 @@ namespace TestCLI
         
         static void CreateNewNode()
         {
-            //Create a new node
-            //How: 
-            //1. Set node info (id, title, content_text, parent_node, children_nodes)
-            //2.  Set current prog info
-            //3. Set db info
-
-            //content, title -> user input (added to prog, pushedd to db)
-            //id -> auto incremented by db, need to pushed in prog
-            //parent -> user input, set to prog, pushed to db
-            //children: N/A
-
-            //User input title and content, select parent node
-            //Add child node to parent node
-            //Push to DB
-            //Add ID to current program
-
             //Declare Variables
             string title;
              string content_text;
