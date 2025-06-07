@@ -21,47 +21,30 @@ namespace TestCLI
             CLI_DB db = new CLI_DB();
             db.Init();
 
+            KnowledgeEntry StartingNode = KnowledgeTreeHelper.root_node;
+            KnowledgeEntry CurrentNode = new EmptyEntry();
+
             //DB_Operation.ResetIdentityIncrement(5);
             //return;
 
             while (true)
             {
-                Console.WriteLine("Enter a command (nv, cr, rm, md, mv) or 'exit' to quit:");
-                string command = Console.ReadLine();
-                Console.WriteLine();
-
-                if (command == "exit") break;
-
-                switch (command)
+                if (CurrentNode is EmptyEntry)
                 {
-                    case "nv":
-                        Navigate_Tree(out _);
-                        break;
-                    case "cr":
-                        CreateNewNode();
-                        break;
-                    case "rm":
-                        RemoveNode();
-                        break;
-                    case "md":
-                        ModifyNode();
-                        break;
-                    case "mv":
-                        MoveNode();
-                        break;
-                    default:
-                        Console.WriteLine("Invalid command. Please try again.");
-                        break;
+                    Navigate_Tree(StartingNode, out CurrentNode);
+                }
+                else
+                {
+                    Navigate_Tree(CurrentNode, out CurrentNode);
                 }
             }
         }
         
-        static void CreateNewNode()
+        static void CreateNewNode(KnowledgeEntry parent_node)
         {
             //Declare Variables
             string title;
              string content_text;
-             KnowledgeEntry parent_node;
 
             //Fill Variables
             Console.WriteLine("New Node: \n");
@@ -70,7 +53,6 @@ namespace TestCLI
             Console.Write("Content Text: ");
             content_text = Console.ReadLine();
             Console.WriteLine("\nEnter sl to select parent node of the new node\n");
-            Navigate_Tree(out parent_node);
 
             if (title == "-1" || title == "-1" || parent_node is EmptyEntry)
             {
@@ -80,17 +62,15 @@ namespace TestCLI
             //Backend operations
             KnowledgeTreeHelper.CreateEntry(title, content_text, parent_node);
         }
-        static void RemoveNode()
+        static void RemoveNode(KnowledgeEntry targetentry)
         {
-            KnowledgeEntry targetentry;
-            Navigate_Tree(out targetentry);
-            KnowledgeTreeHelper.RemoveEntry(targetentry);
+            if (targetentry is not EmptyEntry)
+            {
+                KnowledgeTreeHelper.RemoveEntry(targetentry);
+            }
         }
-        static void ModifyNode()
+        static void ModifyNode(KnowledgeEntry targetentry)
         {
-            KnowledgeEntry targetentry;
-            Navigate_Tree(out targetentry);
-
             Console.WriteLine("\nSelected Node: \n\n" + KnowledgeTreeHelper.GetNodeText(targetentry));
 
             Console.WriteLine("Enter nothing to keep the original information: ");
@@ -110,16 +90,11 @@ namespace TestCLI
 
             KnowledgeTreeHelper.ModifyEntry(targetentry, new_title, new_content);
         }
-        static void MoveNode()
+        static void MoveNode(KnowledgeEntry targetentry)
         {
-            Console.WriteLine("Select the entry to be moved: \n"); 
-            KnowledgeEntry targetentry;
-            Navigate_Tree(out targetentry);
-            Console.WriteLine("\nEntry selected");
-            
             Console.WriteLine("Select the destination entry for the entry to be moved to: ");
             KnowledgeEntry new_parent;
-            Navigate_Tree(out new_parent);
+            Navigate_Tree(targetentry, out new_parent);
             Console.WriteLine("Destination selected");
 
             if (targetentry is not EmptyEntry && new_parent is not EmptyEntry)
@@ -129,9 +104,10 @@ namespace TestCLI
         }
 
         //UI tools for development
-        static void Navigate_Tree(out KnowledgeEntry CurrentNode)
+
+        static void Navigate_Tree(KnowledgeEntry StartingNode, out KnowledgeEntry CurrentNode)
         {
-            CurrentNode = KnowledgeTreeHelper.root_node;
+            CurrentNode = StartingNode;
 
             while (true)
             {
@@ -139,10 +115,18 @@ namespace TestCLI
                 DisplayCurrentNodeInfo(CurrentNode);
                 DisplayCurrentNodeChildren(CurrentNode);
 
-                //Selection
+                //User Input -> Control, Selection, Command
                 Console.WriteLine("Input sl to Select Current Node or Enter a number to access respective node");
-                Console.WriteLine("Enter -1 to leave the program. Enter -2 to Return to Parent Node. ");
+                Console.WriteLine("Enter -1 to reset. Enter -2 to Return to Parent Node. ");
+                Console.WriteLine("Enter a command (nv, cr, rm, md, mv) or 'exit' to quit:");
+                Console.WriteLine();
                 string user_input = Console.ReadLine();
+
+                //Execute Commands
+                if (ExecuteCommand (CurrentNode, user_input) == true)
+                {
+                    return;
+                }
 
                 //Select Current Node
                 if (user_input == "sl")
@@ -162,14 +146,15 @@ namespace TestCLI
                 {
                     if (KnowledgeTreeHelper.IsRootNode(CurrentNode) == true)
                     {
-                        return;
+                        Console.WriteLine("This is the Root Node. ");
+                        continue; 
                     }
 
                     CurrentNode = CurrentNode.parent_node;
                     continue;
                 }
 
-                //Select Children Node
+                //Select New Current Node
                 KnowledgeEntry selected_entry;
                 try
                 {
@@ -182,6 +167,30 @@ namespace TestCLI
                     Console.WriteLine("Invalid Input");
                     continue;
                 }
+            }
+        }
+
+        //Return true when command executed
+        static bool ExecuteCommand(KnowledgeEntry SelectedNode, string command)
+        {
+            if (command == "exit") Environment.Exit(0);
+
+            switch (command)
+            {
+                case "cr":
+                    CreateNewNode(SelectedNode);
+                    return true;
+                case "rm":
+                    RemoveNode(SelectedNode);
+                    return true;
+                case "md":
+                    ModifyNode(SelectedNode);
+                    return true;
+                case "mv":
+                    MoveNode(SelectedNode);
+                    return true;
+                default:
+                    return false;
             }
         }
         static void DisplayCurrentNodeInfo(KnowledgeEntry CurrentNode)

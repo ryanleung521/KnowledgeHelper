@@ -18,7 +18,7 @@ namespace ClassLibrary.KnowledgeEntries
         public List<Tag> tags { get; set; } = new List<Tag>();
 
         public KnowledgeEntry() { }
-        public KnowledgeEntry(int id, string title, string content_text, KnowledgeEntry parent_node, List<KnowledgeEntry> children_nodes, List<string> tags)
+        public KnowledgeEntry(int id, string title, string content_text, KnowledgeEntry parent_node, List<KnowledgeEntry> children_nodes, List<Tag> tags)
         {
             this.id = id;
             this.title = title;

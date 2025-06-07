@@ -27,7 +27,7 @@ namespace ClassLibrary.DB_Interaction
 
     public class db_Tagging()
     {
-        public db_Entry Entry { get; set; }
-        public db_Tag Tag { get; set; }
+        public int EID { get; set; }
+        public int TID { get; set; }
     }
 }

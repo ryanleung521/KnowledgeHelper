@@ -15,7 +15,7 @@ namespace ClassLibrary.KnowledgeEntries
             content_text = "Root Entry";
             parent_node = new EmptyEntry();
             children_nodes = new List<KnowledgeEntry>();
-            tags = new List<string>();
+            tags = new List<Tag>();
         }
     }
 
@@ -28,7 +28,7 @@ namespace ClassLibrary.KnowledgeEntries
             content_text = "";
             parent_node = null;
             children_nodes = new List<KnowledgeEntry>();
-            tags = new List<string>();
+            tags = new List<Tag>();
         }
     }
 }

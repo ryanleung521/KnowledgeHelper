@@ -41,7 +41,7 @@ namespace ClassLibrary.DB_Interaction
 
             //For db_Tagging
             modelBuilder.Entity<db_Tagging>().
-                HasKey(t => new { t.Entry, t.Tag });
+                HasKey(t => new { t.EID, t.TID });
         }
 
         public KnowledgeDbContext(DbContextOptions<KnowledgeDbContext> options) : base(options) { }
@@ -192,7 +192,7 @@ namespace ClassLibrary.DB_Interaction
                 content_text = db_entry.Content,
                 parent_node = null,
                 children_nodes = new List<KnowledgeEntry>(),
-                tags = new List<string>()
+                tags = new List<Tag>()
             };
 
             return entry;
@@ -219,8 +219,8 @@ namespace ClassLibrary.DB_Interaction
             var TaggingList = db.Taggings.ToList();
             foreach (var db_tagging in TaggingList)
             {
-                var entry =  KnowledgeTreeHelper.GetEntry(db_tagging.Entry.EID);
-                var tag = TagHelper.GetTag(db_tagging.Tag.TID);
+                var entry =  KnowledgeTreeHelper.GetEntry(db_tagging.EID);
+                var tag = TagHelper.GetTag(db_tagging.TID);
                 if (entry != null)
                 {
                     entry.tags.Add(tag);
@@ -247,7 +247,7 @@ namespace ClassLibrary.DB_Interaction
                 return;
             }
 
-            db_Tagging db_tagging = db.Taggings.Single(t => t.Tag.TID == tag.TID && t.Entry.EID == entry.id);
+            db_Tagging db_tagging = db.Taggings.Single(t => t.TID == tag.TID && t.EID == entry.id);
             db.Taggings.Remove(db_tagging);
 
             db.SaveChanges();
@@ -264,7 +264,7 @@ namespace ClassLibrary.DB_Interaction
         {
             Setup();
 
-            var db_tagging = db.Taggings.Where(t => t.Tag.TID == tag.TID).ToList();
+            var db_tagging = db.Taggings.Where(t => t.TID == tag.TID).ToList();
             db.Taggings.RemoveRange(db_tagging);
             db.SaveChanges();
 
@@ -288,7 +288,7 @@ namespace ClassLibrary.DB_Interaction
         }
         private static db_Tagging GenerateDBTagging(KnowledgeEntry entry,  Tag tag)
         {
-            return new db_Tagging() { Entry = GenerateDBEntry(entry), Tag = GenerateDBTag(tag) };
+            return new db_Tagging() { EID = GenerateDBEntry(entry).EID, TID = GenerateDBTag(tag).TID };
         }
 
         //Misc Func
