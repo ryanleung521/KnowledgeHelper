@@ -28,26 +28,50 @@ namespace ClassLibrary.KnowledgeEntries
         {
             return TagList.Find(t => t.TID == id);
         }
+        public static Tag GetTag(string TagName)
+        {
+            return TagList.Find(t => t.TagName == TagName);
+        }
 
         public static void AddTagToEntry(KnowledgeEntry Entry, Tag Tag)
         {
+            if (Entry.tags.Contains(Tag))
+            {
+                return; 
+            }
+
             Entry.tags.Add(Tag);
 
             DB_Operation.AddTagToEntry(Entry, Tag);
         }
         public static void RemoveTagFromEntry(KnowledgeEntry Entry, Tag Tag)
         {
-            Entry.tags.Remove(Tag);
-
             DB_Operation.RemoveTagFromEntry(Entry, Tag);
+            Entry.tags.Remove(Tag);
         }
-        public static void AddNewTag(Tag tag)
+        public static void AddNewTag(string tagName)
         {
-            TagList.Add(tag);
-            DB_Operation.AddNewTag(tag);
+            Tag new_tag = new Tag();
+            new_tag.TagName = tagName;
+
+            TagList.Add(new_tag);
+            DB_Operation.AddNewTag(new_tag);
         }
-        public static void RemoveTag(Tag tag)
+        public static void RemoveTag(string tagName)
         {
+            Tag tag = null;
+            foreach (var item in TagList)
+            {
+                if (item.TagName == tagName)
+                {
+                    tag = item; break;
+                }
+            }
+            if (tag == null)
+            {
+                return;
+            }
+
             foreach (var entry in KnowledgeTreeHelper.EntryList)
             {
                 if (entry.tags.Contains(tag) == true)
