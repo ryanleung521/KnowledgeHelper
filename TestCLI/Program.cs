@@ -1,15 +1,19 @@
 ﻿using ClassLibrary.DB_Interaction;
 using ClassLibrary.KnowledgeEntries;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.ComponentModel.Design;
 using System.Data;
+using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using TestCLI.Migrations;
 
 namespace TestCLI
 {
@@ -18,6 +22,7 @@ namespace TestCLI
         static void Main(string[] args)
         {
             KnowledgeTreeHelper.init();
+            TagHelper.Init();
             CLI_DB db = new CLI_DB();
             db.Init();
 
@@ -102,6 +107,73 @@ namespace TestCLI
                KnowledgeTreeHelper.MoveEntry(targetentry, new_parent);
             }
         }
+        static void AddTagToEntry(KnowledgeEntry targetentry)
+        {
+            Console.Write("Tag: "); 
+            string user_input = Console.ReadLine();
+            var tag = TagHelper.GetTag(user_input);
+
+            if (tag == null)
+            {
+                Console.WriteLine("Tag not exist, add new tag? Enter Y to proceed. ");
+                if (Console.ReadLine() == "Y")
+                {
+                    TagHelper.AddNewTag(user_input);
+                    Tag new_tag = TagHelper.GetTag(user_input);
+                    TagHelper.AddTagToEntry(targetentry, new_tag);
+                }
+                return;
+            }
+
+            TagHelper.AddTagToEntry(targetentry, tag); return;
+        }
+        static void RemoveTagFromEntry(KnowledgeEntry targetentry)
+        {
+            Console.WriteLine($"Tag List of {targetentry.title}"); 
+            PrintTagInfo(targetentry.tags);
+            try
+            {
+                string user_input = Console.ReadLine();
+                var Tag = targetentry.tags[Convert.ToInt32(user_input)-1];
+                TagHelper.RemoveTagFromEntry(targetentry, Tag);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine("Invalid Input. ");
+            }
+        }
+        static void ManageTagList()
+        {
+            Console.WriteLine("Tag List");
+            PrintTagInfo(TagHelper.TagList);
+            Console.WriteLine();
+            Console.WriteLine("Enter \"add\" or \"rm\" to add or remove tags");
+            string user_input = Console.ReadLine() ;
+            if (user_input == "add")
+            {
+                Console.Write("Tag Name: ");
+                string tagname = Console.ReadLine();
+                TagHelper.AddNewTag(tagname);
+                return;
+            }
+            if (user_input == "rm")
+            {
+                Console.Write("Tag Name: ");
+                string tagname = Console.ReadLine();
+                TagHelper.RemoveTag(tagname);
+                return;
+            }
+            Console.WriteLine("Invalid Input. ");
+            return;
+        }
+        static void PrintTagInfo(List<Tag> Taglist)
+        {
+            int i = 1;
+            foreach (Tag tag in Taglist)
+            {
+                Console.WriteLine($"{i}. {tag.TagName}");
+            }
+        }
 
         //UI tools for development
 
@@ -112,8 +184,10 @@ namespace TestCLI
             while (true)
             {
                 //Display Current Details
-                DisplayCurrentNodeInfo(CurrentNode);
-                DisplayCurrentNodeChildren(CurrentNode);
+                DisplayTree(CurrentNode);
+
+                //DisplayCurrentNodeInfo(CurrentNode);
+                //DisplayCurrentNodeChildren(CurrentNode);
 
                 //User Input -> Control, Selection, Command
                 Console.WriteLine("Input sl to Select Current Node or Enter a number to access respective node");
@@ -189,23 +263,68 @@ namespace TestCLI
                 case "mv":
                     MoveNode(SelectedNode);
                     return true;
+                case "tag add":
+                    AddTagToEntry(SelectedNode);
+                    return true;
+                case "tag rm":
+                    RemoveTagFromEntry(SelectedNode);
+                    return true;
+                case "taglist":
+                    ManageTagList();
+                    return true;
                 default:
                     return false;
             }
         }
-        static void DisplayCurrentNodeInfo(KnowledgeEntry CurrentNode)
+        static void DisplayTree(KnowledgeEntry CurrentNode)
         {
-            Console.WriteLine($"Current Node:\n");
-            Console.WriteLine(KnowledgeTreeHelper.GetNodeText(CurrentNode));
-        }
-        static void DisplayCurrentNodeChildren(KnowledgeEntry CurrentNode)
-        {
-            Console.WriteLine("Children Nodes: ");
-            for (int i = 0; i < CurrentNode.children_nodes.Count; i++)
+            //Show only children nodes of pathnodes
+            List<KnowledgeEntry> PathNodes = new List<KnowledgeEntry>();
+            while (true)
             {
-                Console.WriteLine($"{i+1}. {CurrentNode.children_nodes[i].title}");
+                PathNodes.Add(CurrentNode);
+                CurrentNode = CurrentNode.parent_node;
+                if (CurrentNode is EmptyEntry)
+                {
+                    break;
+                }
             }
-            Console.WriteLine();
+            PathNodes.Reverse();
+
+            //Depth and Indentation
+            const string standardIndentation = "    ";
+
+            //Sequence of all nodes to be displayed
+            Queue<KnowledgeEntry> DisplaySequence = SetupDisplaySequence(PathNodes, 0); 
+            while (DisplaySequence.Count != 0)
+            {
+                KnowledgeEntry node = DisplaySequence.Dequeue();
+                int counter = 1;
+                int depth = KnowledgeTreeHelper.GetNodeDepth(node);
+                string indentation = string.Concat(Enumerable.Repeat(standardIndentation, depth));
+
+                Console.WriteLine($"{indentation}{counter}. {node.title}");
+
+                counter++;
+            }
+        }
+        static Queue<KnowledgeEntry> SetupDisplaySequence(List<KnowledgeEntry> PathNodes, int depth)
+        {
+            Queue<KnowledgeEntry> Sequence = new Queue<KnowledgeEntry>();
+            Sequence.Enqueue(PathNodes[depth]);
+            foreach (var child in PathNodes[depth].children_nodes)
+            {
+                Sequence.Enqueue(child);
+                if (PathNodes.Contains(child))
+                {
+                    var recurrsion_queue = SetupDisplaySequence(PathNodes, depth + 1);
+                    while (recurrsion_queue.Count != 0)
+                    {
+                        Sequence.Enqueue(recurrsion_queue.Dequeue());
+                    }
+                }
+            }
+            return Sequence;
         }
 
         //Identation

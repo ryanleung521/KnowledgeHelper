@@ -259,6 +259,8 @@ namespace ClassLibrary.DB_Interaction
             var db_tag = GenerateDBTag(tag);
             db.Tags.Add(db_tag);
             db.SaveChanges();
+
+            tag.TID = db.Tags.Max(t=> t.TID);
         }
         public static void RemoveTag(Tag tag)
         {

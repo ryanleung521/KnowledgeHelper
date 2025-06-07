@@ -73,6 +73,21 @@ namespace ClassLibrary.KnowledgeEntries
             }
             return nodetext;
         }
+        public static int GetNodeDepth(KnowledgeEntry node)
+        {
+            if (EntryList.Contains(node) == false)
+            {
+                return -1;
+            }
+
+            int depth= -1;
+            while (node is not EmptyEntry)
+            {
+                depth++;
+                node = node.parent_node;
+            }
+            return depth;
+        }
 
         public static bool IsRootNode(KnowledgeEntry entry)
         {

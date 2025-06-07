@@ -39,7 +39,7 @@ namespace TestCLI.Migrations
 
                     b.HasKey("EID");
 
-                    b.ToTable("Entries", (string)null);
+                    b.ToTable("Entries");
                 });
 
             modelBuilder.Entity("ClassLibrary.DB_Interaction.db_Relationship", b =>
@@ -52,7 +52,37 @@ namespace TestCLI.Migrations
 
                     b.HasKey("PID", "CID");
 
-                    b.ToTable("Relationships", (string)null);
+                    b.ToTable("Relationships");
+                });
+
+            modelBuilder.Entity("ClassLibrary.DB_Interaction.db_Tag", b =>
+                {
+                    b.Property<int>("TID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TID"));
+
+                    b.Property<string>("TName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("TID");
+
+                    b.ToTable("Tags");
+                });
+
+            modelBuilder.Entity("ClassLibrary.DB_Interaction.db_Tagging", b =>
+                {
+                    b.Property<int>("EID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TID")
+                        .HasColumnType("int");
+
+                    b.HasKey("EID", "TID");
+
+                    b.ToTable("Taggings");
                 });
 #pragma warning restore 612, 618
         }
