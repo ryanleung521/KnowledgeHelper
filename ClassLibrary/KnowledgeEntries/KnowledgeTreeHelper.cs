@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ClassLibrary.DB_Interaction;
+using Microsoft.Identity.Client;
 using Newtonsoft.Json;
 
 namespace ClassLibrary.KnowledgeEntries
@@ -86,6 +87,31 @@ namespace ClassLibrary.KnowledgeEntries
                 depth++;
                 node = node.parent_node;
             }
+            return depth;
+        }
+        public static int GetGreatestDepth()
+        {
+            int depth = 0;
+            Queue<KnowledgeEntry> ParentNodesList = new Queue<KnowledgeEntry>();
+            ParentNodesList.Enqueue(root_node);
+            while (ParentNodesList.Count > 0)
+            {
+                int original_count = ParentNodesList.Count;
+                //Change nodes to depth +1
+                for (int i = 0; i < original_count; i++)
+                {
+                    var node = ParentNodesList.Dequeue();
+                    foreach (var child in node.children_nodes)
+                    {
+                        if (child.children_nodes.Count != 0)
+                        {
+                            ParentNodesList.Enqueue(child);
+                        }
+                    }
+                }
+                depth ++;
+            }
+
             return depth;
         }
 

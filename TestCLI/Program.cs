@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using System.Transactions;
 using TestCLI.Migrations;
 
 namespace TestCLI
@@ -190,6 +191,7 @@ namespace TestCLI
                 //DisplayCurrentNodeChildren(CurrentNode);
 
                 //User Input -> Control, Selection, Command
+                Console.WriteLine();
                 Console.WriteLine("Input sl to Select Current Node or Enter a number to access respective node");
                 Console.WriteLine("Enter -1 to reset. Enter -2 to Return to Parent Node. ");
                 Console.WriteLine("Enter a command (nv, cr, rm, md, mv) or 'exit' to quit:");
@@ -295,17 +297,24 @@ namespace TestCLI
             const string standardIndentation = "    ";
 
             //Sequence of all nodes to be displayed
-            Queue<KnowledgeEntry> DisplaySequence = SetupDisplaySequence(PathNodes, 0); 
+            Queue<KnowledgeEntry> DisplaySequence = SetupDisplaySequence(PathNodes, 0);
+
+            int[] index_counter = new int[KnowledgeTreeHelper.GetGreatestDepth()+1];
+            for (int i = 0; i < index_counter.Length; i++)
+            {
+                index_counter[i] = 1;
+            }
+
             while (DisplaySequence.Count != 0)
             {
                 KnowledgeEntry node = DisplaySequence.Dequeue();
-                int counter = 1;
+                
                 int depth = KnowledgeTreeHelper.GetNodeDepth(node);
                 string indentation = string.Concat(Enumerable.Repeat(standardIndentation, depth));
 
-                Console.WriteLine($"{indentation}{counter}. {node.title}");
+                Console.WriteLine($"{indentation}{index_counter[depth]}. {node.title}");
 
-                counter++;
+                index_counter[depth]++;
             }
         }
         static Queue<KnowledgeEntry> SetupDisplaySequence(List<KnowledgeEntry> PathNodes, int depth)
@@ -314,7 +323,6 @@ namespace TestCLI
             Sequence.Enqueue(PathNodes[depth]);
             foreach (var child in PathNodes[depth].children_nodes)
             {
-                Sequence.Enqueue(child);
                 if (PathNodes.Contains(child))
                 {
                     var recurrsion_queue = SetupDisplaySequence(PathNodes, depth + 1);
@@ -322,6 +330,10 @@ namespace TestCLI
                     {
                         Sequence.Enqueue(recurrsion_queue.Dequeue());
                     }
+                }
+                else
+                {
+                    Sequence.Enqueue(child);
                 }
             }
             return Sequence;
