@@ -185,6 +185,7 @@ namespace TestCLI
             while (true)
             {
                 //Display Current Details
+                DisplayNode(CurrentNode);
                 DisplayTree(CurrentNode);
 
                 //DisplayCurrentNodeInfo(CurrentNode);
@@ -194,7 +195,7 @@ namespace TestCLI
                 Console.WriteLine();
                 Console.WriteLine("Input sl to Select Current Node or Enter a number to access respective node");
                 Console.WriteLine("Enter -1 to reset. Enter -2 to Return to Parent Node. ");
-                Console.WriteLine("Enter a command (nv, cr, rm, md, mv) or 'exit' to quit:");
+                Console.WriteLine("Enter a command (cr, rm, mv, md, add tag, remove tag, taglist) or 'exit' to quit:");
                 Console.WriteLine();
                 string user_input = Console.ReadLine();
 
@@ -278,6 +279,14 @@ namespace TestCLI
                     return false;
             }
         }
+        static void DisplayNode(KnowledgeEntry Node)
+        {
+            Console.WriteLine("====================================");
+            Console.WriteLine("Current Node: ");
+            Console.WriteLine($"Title: {Node.title}");
+            Console.WriteLine($"Content: {Node.content_text}");
+            Console.WriteLine("====================================");
+        }
         static void DisplayTree(KnowledgeEntry CurrentNode)
         {
             //Show only children nodes of pathnodes
@@ -337,12 +346,6 @@ namespace TestCLI
                 }
             }
             return Sequence;
-        }
-
-        //Identation
-        private static string GetIndentation(string tab, int depth)
-        {
-            return string.Concat(Enumerable.Repeat(tab, depth));
         }
     }
  }
