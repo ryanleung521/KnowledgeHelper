@@ -8,7 +8,7 @@
         Title="MainWindow" Height="450" Width="800">
 
     <Grid>
-        <TreeView x:Name="KnowledgeTreeDisplay" HorizontalAlignment="Left" Height="149" Margin="54,68,0,0" VerticalAlignment="Top" Width="179"
+        <TreeView x:Name="KnowledgeTreeDisplay" HorizontalAlignment="Left" Height="277" Margin="42,41,0,0" VerticalAlignment="Top" Width="217"
                   ItemsSource="{Binding RootNodes}">
             <TreeView.Resources>
                 <HierarchicalDataTemplate DataType="{x:Type local:DisplayEntry}"
@@ -16,11 +16,26 @@
                     <TextBlock Text="{Binding Entry.title}"/>
                 </HierarchicalDataTemplate>
 
-                <Style TargetType="{x:Type TreeViewItem}">
-                    <EventSetter Event="MouseDown" Handler="TextBlock_MouseDown"/>
+                <Style TargetType="{x:Type TreeViewItem}" x:Name="TreeTitle">
+                    <EventSetter Event="MouseDown" Handler="TreeTitle_MouseDown"/>
+                    <EventSetter Event="KeyDown" Handler="TreeTitle_KeyDown"/>
                 </Style>
             </TreeView.Resources>
         </TreeView>
-        <TextBlock HorizontalAlignment="Left" Height="75" Margin="376,142,0,0" TextWrapping="Wrap" Text="{Binding Testing}" VerticalAlignment="Top" Width="216"/>
+
+        <Grid x:Name="CurrentDisplayGrid" HorizontalAlignment="Left" Height="348" Margin="476,25,0,0" VerticalAlignment="Top" Width="303"
+              DataContext="{Binding ElementName=KnowledgeTreeDisplay, Path=SelectedItem}">
+            <Label x:Name="lbl_Title" Content="Title: " Margin="31,21,233,231" RenderTransformOrigin="1.041,0.595"/>
+            <Label x:Name="lbl_content" Content="Content:" Margin="10,80,233,172"/>
+            
+            <TextBox x:Name="txt_Title" HorizontalAlignment="Left" Height="25" Margin="75,21,0,0" TextWrapping="Wrap" Text="{Binding Entry.title, Mode=OneWay}" VerticalAlignment="Top" Width="171"/>
+            <TextBox x:Name="txt_Content" HorizontalAlignment="Left" Height="206" Margin="75,80,0,0" TextWrapping="Wrap" Text="{Binding Entry.content_text, Mode=OneWay}" VerticalAlignment="Top" Width="171"/>
+            
+            <Button x:Name="btn_create" Content="Create" HorizontalAlignment="Left" Height="29" Margin="30,300,0,0" VerticalAlignment="Top" Width="59" Click="btn_create_Click"/>
+            <Button x:Name="btn_remove" Content="Remove" HorizontalAlignment="Left" Height="29" Margin="94,300,0,0" VerticalAlignment="Top" Width="59" Click="btn_remove_Click"/>
+            <Button x:Name="btn_modify" Content="Save" HorizontalAlignment="Left" Height="29" Margin="158,300,0,0" VerticalAlignment="Top" Width="59" Click="btn_modify_Click"/>
+            <Button x:Name="btn_move" Content="Move" HorizontalAlignment="Left" Height="29" Margin="222,300,0,0" VerticalAlignment="Top" Width="59"/>
+
+        </Grid>
     </Grid>
 </Window>
