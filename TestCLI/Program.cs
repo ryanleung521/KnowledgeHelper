@@ -24,8 +24,6 @@ namespace TestCLI
         {
             KnowledgeTreeHelper.init();
             TagHelper.Init();
-            CLI_DB db = new CLI_DB();
-            db.Init();
 
             KnowledgeEntry StartingNode = KnowledgeTreeHelper.root_node;
             KnowledgeEntry CurrentNode = new EmptyEntry();
@@ -70,6 +68,12 @@ namespace TestCLI
         }
         static void RemoveNode(KnowledgeEntry targetentry)
         {
+            if (KnowledgeTreeHelper.IsRootNode(targetentry) == true)
+            {
+                Console.WriteLine("Cannot delete the root node. ");
+                return;
+            }
+
             if (targetentry is not EmptyEntry)
             {
                 KnowledgeTreeHelper.RemoveEntry(targetentry);

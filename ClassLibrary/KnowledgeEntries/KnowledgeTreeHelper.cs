@@ -141,7 +141,6 @@ namespace ClassLibrary.KnowledgeEntries
         {
             if (IsRootNode(entry) == true)
             {
-                Console.WriteLine("Cannot delete the root node!");
                 return; 
             }
 
