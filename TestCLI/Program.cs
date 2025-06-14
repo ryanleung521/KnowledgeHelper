@@ -180,6 +180,51 @@ namespace TestCLI
             }
         }
 
+        //Search
+        static void Search()
+        {
+            const string selectionkey_txt = "txt";
+            const string selectionkey_tag = "tag";
+
+            Console.WriteLine($"Type \"{selectionkey_txt}\" to search by text or \"{selectionkey_tag}\" to search by tag");
+            string selection = Console.ReadLine();
+
+            if (selection != selectionkey_txt && selection !=selectionkey_tag)
+            {
+                Console.WriteLine("Invalid Input");
+                return;
+            }
+
+            if (selection == selectionkey_txt)
+            {
+                string user_input = Console.ReadLine();
+                KnowledgeTreeHelper.SearchEntries(user_input);
+                return;
+            }
+            if (selection == selectionkey_tag)
+            {
+                PrintTagInfo(TagHelper.TagList);
+
+                Console.WriteLine("Enter the tag name: ") ;
+                string user_input = Console.ReadLine();
+                Tag selectedTag = null;
+
+                foreach (Tag tag in TagHelper.TagList)
+                {
+                    if (user_input == tag.TagName)
+                    {
+                        selectedTag = tag;
+                    }
+                }
+
+                if (selectedTag != null)
+                {
+                    KnowledgeTreeHelper.SearchEntries($"#{selectedTag.TagName}");
+                }
+                return;
+            }
+        }
+
         //UI tools for development
 
         static void Navigate_Tree(KnowledgeEntry StartingNode, out KnowledgeEntry CurrentNode)
@@ -199,7 +244,7 @@ namespace TestCLI
                 Console.WriteLine();
                 Console.WriteLine("Input sl to Select Current Node or Enter a number to access respective node");
                 Console.WriteLine("Enter -1 to reset. Enter -2 to Return to Parent Node. ");
-                Console.WriteLine("Enter a command (cr, rm, mv, md, tag add, tag remove, taglist) or 'exit' to quit:");
+                Console.WriteLine("Enter a command (cr, rm, mv, md, tag add, tag remove, taglist, sr, sr rm) or 'exit' to quit:");
                 Console.WriteLine();
                 string user_input = Console.ReadLine();
 
@@ -278,6 +323,12 @@ namespace TestCLI
                     return true;
                 case "taglist":
                     ManageTagList();
+                    return true;
+                case "sr":
+                    Search();
+                    return true;
+                case "sr rm":
+                    KnowledgeTreeHelper.CompleteSearch();
                     return true;
                 default:
                     return false;

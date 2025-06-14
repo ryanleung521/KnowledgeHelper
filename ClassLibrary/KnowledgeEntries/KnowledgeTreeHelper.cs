@@ -274,7 +274,9 @@ namespace ClassLibrary.KnowledgeEntries
                 searchRoot.children_nodes.Add(result);
             }
 
+            searchRoot.parent_node = root_node;
             root_node.children_nodes.Add (searchRoot);
+            EntryList.Add(searchRoot);
         }
         private static void RemoveSearchResultFromRoot(KnowledgeEntry searchRoot)
         {
