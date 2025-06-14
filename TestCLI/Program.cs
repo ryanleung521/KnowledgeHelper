@@ -199,7 +199,7 @@ namespace TestCLI
                 Console.WriteLine();
                 Console.WriteLine("Input sl to Select Current Node or Enter a number to access respective node");
                 Console.WriteLine("Enter -1 to reset. Enter -2 to Return to Parent Node. ");
-                Console.WriteLine("Enter a command (cr, rm, mv, md, add tag, remove tag, taglist) or 'exit' to quit:");
+                Console.WriteLine("Enter a command (cr, rm, mv, md, tag add, tag remove, taglist) or 'exit' to quit:");
                 Console.WriteLine();
                 string user_input = Console.ReadLine();
 

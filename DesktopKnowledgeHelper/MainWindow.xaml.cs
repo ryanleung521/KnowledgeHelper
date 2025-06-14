@@ -1,8 +1,10 @@
 ﻿using ClassLibrary;
 using ClassLibrary.KnowledgeEntries;
 using Microsoft.Identity.Client;
+using Microsoft.VisualBasic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows;
@@ -20,27 +22,8 @@ namespace DesktopKnowledgeHelper
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window, INotifyPropertyChanged
+    public partial class MainWindow : Window
     {
-        //Data Binding
-
-        //Tree View
-        public ObservableCollection<DisplayEntry> RootNodes { get; set; } = new ObservableCollection<DisplayEntry>();
-
-        private string _CurrentNodeString;
-        public string CurrentNodeString
-        {
-            get { return _CurrentNodeString; }
-            set 
-            { 
-                if (value != _CurrentNodeString)
-                {
-                    _CurrentNodeString = value;
-                    OnPropertyChanged(nameof(CurrentNodeString));
-                } 
-            }
-        }
-
         //Init
         public MainWindow()
         {
@@ -50,18 +33,26 @@ namespace DesktopKnowledgeHelper
             TagHelper.Init();
 
             RootNodes.Add(new DisplayEntry(KnowledgeTreeHelper.root_node));
-
+            
             this.DataContext = this;
+
+            this.radio_local.IsChecked = true;
         }
 
-        //Navigate the TreeView
+        //TreeView
+        //Tree View DataBinding
+        public ObservableCollection<DisplayEntry> RootNodes { get; set; } = new ObservableCollection<DisplayEntry>();
+
         private void NavigateTree(object sender)
         {
-            TreeViewItem CurrentNode = sender as TreeViewItem;
+            TreeViewItem CurrentTreeViewItem = sender as TreeViewItem;
+            var _entry = CurrentTreeViewItem.DataContext as DisplayEntry;
+            var CurrentEntry = _entry.Entry;
 
-            if (CurrentNode != null)
+            if (CurrentTreeViewItem != null)
             {
-                CurrentNode.IsExpanded = !CurrentNode.IsExpanded; //Not Gates
+                CurrentTreeViewItem.IsExpanded = !CurrentTreeViewItem.IsExpanded; //Not Gates
+                FillTagsList(CurrentEntry);
             }
         }
         private void TreeTitle_MouseDown(object sender, MouseButtonEventArgs e)
@@ -81,14 +72,38 @@ namespace DesktopKnowledgeHelper
             e.Handled = true;
         }
 
-        //CRUD
+        //CRUD of Nodes
         private void btn_create_Click(object sender, RoutedEventArgs e)
         {
+            CreateNode();
+        }
+        private void btn_remove_Click (object sender, RoutedEventArgs e)
+        {
+            RemoveNode();
+        }
+        private void btn_modify_Click(object sender, RoutedEventArgs e)
+        {
+            ModifyNode();
+        }
+
+        private void CreateNode()
+        {
+            if (this.KnowledgeTreeDisplay.SelectedItem == null)
+            {
+                return;
+            }
+
             var _ParentNode = this.KnowledgeTreeDisplay.SelectedItem as DisplayEntry;
             var ParentNode = _ParentNode.Entry;
 
             var title = this.txt_Title.Text;
             var content = this.txt_Content.Text;
+
+            //Not Same Information to prevent misclick
+            if (title == ParentNode.title || content == ParentNode.content_text)
+            {
+                return;
+            }
 
             KnowledgeTreeHelper.CreateEntry(title, content, ParentNode);
 
@@ -96,17 +111,27 @@ namespace DesktopKnowledgeHelper
             KnowledgeEntry new_node = KnowledgeTreeHelper.EntryList.Last();
             _ParentNode.Children.Add(new DisplayEntry(new_node));
         }
-        private void btn_remove_Click (object sender, RoutedEventArgs e)
+        private void RemoveNode()
         {
-            var _SelectedNode = this.KnowledgeTreeDisplay.SelectedValue as DisplayEntry;
+            if (this.KnowledgeTreeDisplay.SelectedItem == null)
+            {
+                return;
+            }
+
+            var _SelectedNode = this.KnowledgeTreeDisplay.SelectedItem as DisplayEntry;
             var SelectedNode = _SelectedNode.Entry;
 
             KnowledgeTreeHelper.RemoveEntry(SelectedNode);
 
             _SelectedNode.Parent.Children.Remove(_SelectedNode);
         }
-        private void btn_modify_Click(object sender, RoutedEventArgs e)
+        private void ModifyNode()
         {
+            if (this.KnowledgeTreeDisplay.SelectedItem == null)
+            {
+                return;
+            }
+
             var _SelectedNode = this.KnowledgeTreeDisplay.SelectedItem as DisplayEntry;
             var SelectedNode = _SelectedNode.Entry;
 
@@ -116,11 +141,53 @@ namespace DesktopKnowledgeHelper
             KnowledgeTreeHelper.ModifyEntry(SelectedNode, new_title, new_content);
         }
 
-        //For INotifyPropertyChange
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged(string propertyName)
+        //Tag List Databinding
+        public ObservableCollection<DisplayTag> TagsList { get; set; } = new ObservableCollection<DisplayTag>();
+        private void FillTagsList(KnowledgeEntry entry)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            TagsList.Clear();
+
+            foreach (var tag in entry.tags)
+            {
+                var new_tags = new DisplayTag(tag);
+                TagsList.Add(new_tags);
+            }
+        }
+
+        private void btn_addTag_Click(object sender, RoutedEventArgs e)
+        {
+            var _Entry = this.KnowledgeTreeDisplay.SelectedItem as DisplayEntry;
+            var Entry = _Entry.Entry;
+
+            var TagName = txt_TagName.Text;
+            var Tag = TagHelper.TagList.Find(t => t.TagName == TagName);
+            if (Tag == null)
+            {
+                TagHelper.AddNewTag(TagName);
+                Tag = TagHelper.TagList.Last();
+            }
+            TagHelper.AddTagToEntry(Entry, Tag);
+        }
+        private void radio_local_Checked(object sender, RoutedEventArgs e)
+        {
+            TreeViewItem CurrentTreeViewItem = sender as TreeViewItem;
+            if (CurrentTreeViewItem == null)
+            {
+                return;
+            }
+
+            var _entry = CurrentTreeViewItem.DataContext as DisplayEntry;
+            var CurrentEntry = _entry.Entry;
+
+            FillTagsList(CurrentEntry);
+        }
+        private void radio_global_Checked(object sender, RoutedEventArgs e)
+        {
+            TagsList.Clear();
+            foreach (Tag tag in TagHelper.TagList)
+            {
+                TagsList.Add(new DisplayTag(tag));
+            }
         }
     }
 
@@ -140,6 +207,16 @@ namespace DesktopKnowledgeHelper
                 new_child.Parent = this;
                 Children.Add(new_child);
             }
+        }
+    }
+    public class DisplayTag
+    {
+        public Tag tag { get; set; }
+
+        public DisplayTag() { }
+        public DisplayTag(Tag tag)
+        {
+            this.tag = tag;
         }
     }
 }

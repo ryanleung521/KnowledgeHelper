@@ -23,19 +23,37 @@
             </TreeView.Resources>
         </TreeView>
 
-        <Grid x:Name="CurrentDisplayGrid" HorizontalAlignment="Left" Height="348" Margin="476,25,0,0" VerticalAlignment="Top" Width="303"
+        <Grid x:Name="CurrentDisplayGrid" HorizontalAlignment="Left" Height="353" Margin="274,0,0,0" VerticalAlignment="Center" Width="270"
               DataContext="{Binding ElementName=KnowledgeTreeDisplay, Path=SelectedItem}">
-            <Label x:Name="lbl_Title" Content="Title: " Margin="31,21,233,231" RenderTransformOrigin="1.041,0.595"/>
-            <Label x:Name="lbl_content" Content="Content:" Margin="10,80,233,172"/>
-            
-            <TextBox x:Name="txt_Title" HorizontalAlignment="Left" Height="25" Margin="75,21,0,0" TextWrapping="Wrap" Text="{Binding Entry.title, Mode=OneWay}" VerticalAlignment="Top" Width="171"/>
-            <TextBox x:Name="txt_Content" HorizontalAlignment="Left" Height="206" Margin="75,80,0,0" TextWrapping="Wrap" Text="{Binding Entry.content_text, Mode=OneWay}" VerticalAlignment="Top" Width="171"/>
-            
-            <Button x:Name="btn_create" Content="Create" HorizontalAlignment="Left" Height="29" Margin="30,300,0,0" VerticalAlignment="Top" Width="59" Click="btn_create_Click"/>
-            <Button x:Name="btn_remove" Content="Remove" HorizontalAlignment="Left" Height="29" Margin="94,300,0,0" VerticalAlignment="Top" Width="59" Click="btn_remove_Click"/>
-            <Button x:Name="btn_modify" Content="Save" HorizontalAlignment="Left" Height="29" Margin="158,300,0,0" VerticalAlignment="Top" Width="59" Click="btn_modify_Click"/>
-            <Button x:Name="btn_move" Content="Move" HorizontalAlignment="Left" Height="29" Margin="222,300,0,0" VerticalAlignment="Top" Width="59"/>
+            <Label x:Name="lbl_Title" Content="Title: " Margin="32,21,197,307"/>
+            <Label x:Name="lbl_content" Content="Content:" Margin="10,80,197,246" RenderTransformOrigin="1.232,0.699"/>
 
+            <TextBox x:Name="txt_Title" HorizontalAlignment="Left" Height="25" Margin="78,21,0,0" TextWrapping="Wrap" Text="{Binding Entry.title, Mode=OneWay}" VerticalAlignment="Top" Width="171"/>
+            <TextBox x:Name="txt_Content" HorizontalAlignment="Left" Height="206" Margin="78,80,0,0" TextWrapping="Wrap" Text="{Binding Entry.content_text, Mode=OneWay}" VerticalAlignment="Top" Width="171"/>
+
+            <Button x:Name="btn_create" Content="Create" HorizontalAlignment="Left" Height="29" Margin="6,300,0,0" VerticalAlignment="Top" Width="59" Click="btn_create_Click"/>
+            <Button x:Name="btn_remove" Content="Remove" HorizontalAlignment="Left" Height="29" Margin="70,300,0,0" VerticalAlignment="Top" Width="59" Click="btn_remove_Click"/>
+            <Button x:Name="btn_modify" Content="Save" HorizontalAlignment="Left" Height="29" Margin="134,300,0,0" VerticalAlignment="Top" Width="59" Click="btn_modify_Click"/>
+            <Button x:Name="btn_move" Content="Move" HorizontalAlignment="Left" Height="29" Margin="198,300,0,0" VerticalAlignment="Top" Width="59"/>
+
+
+
+        </Grid>
+
+        <Grid x:Name="TagGrid" Margin="559,41,29,25">
+            <ItemsControl Name="TagListDisplay" Margin="73,30,19,0" ItemsSource="{Binding TagsList}" Height="219" VerticalAlignment="Top">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type local:DisplayTag}">
+                        <Button Content="{Binding tag.TagName}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBox x:Name="txt_TagName" HorizontalAlignment="Left" Height="22" Margin="73,282,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+            <Button x:Name="btn_addTag" Content="Add" HorizontalAlignment="Left" Height="17" Margin="73,313,0,0" VerticalAlignment="Top" Width="54" Click="btn_addTag_Click"/>
+            <Button x:Name="btn_removeTag" Content="Remove" HorizontalAlignment="Left" Height="17" Margin="137,313,0,0" VerticalAlignment="Top" Width="56" RenderTransformOrigin="0.909,0.633"/>
+            <Label x:Name="lbl_TagName" Content="Tag:" HorizontalAlignment="Left" Height="33" Margin="21,277,0,0" VerticalAlignment="Top" Width="46"/>
+            <RadioButton x:Name="radio_global" Content="Global" HorizontalAlignment="Left" Margin="0,213,0,0" VerticalAlignment="Top" Width="63" RenderTransformOrigin="0.022,0.475" Checked="radio_global_Checked"/>
+            <RadioButton x:Name="radio_local" Content="Local" HorizontalAlignment="Left" Margin="2,242,0,0" VerticalAlignment="Top" Width="58" RenderTransformOrigin="0.022,0.475" IsChecked="False" Checked="radio_local_Checked"/>
         </Grid>
     </Grid>
 </Window>
