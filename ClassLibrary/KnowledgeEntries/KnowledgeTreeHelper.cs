@@ -1,12 +1,13 @@
-﻿using System;
+﻿using ClassLibrary.DB_Interaction;
+using Microsoft.Identity.Client;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using ClassLibrary.DB_Interaction;
-using Microsoft.Identity.Client;
-using Newtonsoft.Json;
+using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
 namespace ClassLibrary.KnowledgeEntries
 {
@@ -180,6 +181,147 @@ namespace ClassLibrary.KnowledgeEntries
         public static KnowledgeEntry GetEntry (int EID)
         {
             return EntryList.Find(e => e.id == EID);
+        }
+
+        //Searching Methods
+        private static KnowledgeEntry searchRoot = new KnowledgeEntry();
+        public static void SearchEntries(string searchKey)
+        {
+            List<KnowledgeEntry> searchResults = new List<KnowledgeEntry> ();
+
+            if (searchKey[0] == '#')
+            {
+                searchResults = new List<KnowledgeEntry>(SearchByTag(searchKey));
+            }
+
+            if (searchKey[0] != '#')
+            {
+                searchResults = new List<KnowledgeEntry>(SearchByText(searchKey));
+            }
+
+            AddSearchResultToRoot(searchKey, searchResults, out searchRoot);
+        }
+        public static void CompleteSearch()
+        {
+            RemoveSearchResultFromRoot(searchRoot);
+        }
+
+        private static List<KnowledgeEntry> SearchByText(string searchKey)
+        {
+            List<KnowledgeEntry> resultList = new List<KnowledgeEntry> ();
+            string keyword = searchKey;
+
+            foreach (KnowledgeEntry entry in EntryList)
+            {
+                if (entry is RootEntry || entry is EmptyEntry)
+                {
+                    continue;
+                }
+
+                if (entry.title.Contains(keyword) || entry.content_text.Contains(keyword))
+                {
+                    resultList.Add(entry);
+                }
+            }
+
+            return resultList;
+        }
+        private static List<KnowledgeEntry> SearchByTag(string searchKey)
+        {
+            List<KnowledgeEntry> resultList = new List<KnowledgeEntry>();
+            Tag keyTag = null;
+
+            foreach (Tag tag in TagHelper.TagList)
+            {
+                if (tag.TagName == searchKey.Substring(1))
+                {
+                    keyTag = tag;
+                    break;
+                }
+            }
+
+            if (keyTag == null)
+            {
+                return resultList;
+            }
+
+            foreach (KnowledgeEntry entry in EntryList)
+            {
+                if (entry is RootEntry || entry is EmptyEntry)
+                {
+                    continue;
+                }
+
+                if (entry.tags.Contains(keyTag))
+                {
+                    resultList.Add(entry);
+                }
+            }
+
+            return resultList;
+        }
+
+        private static void AddSearchResultToRoot(string searchKey, List<KnowledgeEntry> search_result, out KnowledgeEntry searchRoot)
+        {
+            searchRoot = new KnowledgeEntry();
+            search_result = new List<KnowledgeEntry>(RemoveDescendentsFromResultList(search_result));
+
+            //id
+            searchRoot.title = $"Search Result of {searchKey}";
+            searchRoot.content_text = $"A list of nodes satisfying the searching condition of {searchKey}";
+            foreach (var result in search_result)
+            {
+                searchRoot.children_nodes.Add(result);
+            }
+
+            root_node.children_nodes.Add (searchRoot);
+        }
+        private static void RemoveSearchResultFromRoot(KnowledgeEntry searchRoot)
+        {
+            root_node.children_nodes.Remove(searchRoot);
+        }
+
+        //Helper methods for searching
+        private static List<KnowledgeEntry> RemoveDescendentsFromResultList (List<KnowledgeEntry> searchResult)
+        {
+            HashSet<KnowledgeEntry> hashEntry = new HashSet<KnowledgeEntry> ();
+            List<KnowledgeEntry> newResult = new List<KnowledgeEntry> ();
+
+            foreach (var subRoot in searchResult)
+            {
+                if (hashEntry.Contains(subRoot))
+                {
+                    continue;
+                }
+
+                newResult.Add (subRoot);
+                hashEntry.Add(subRoot);
+                foreach (var descendent in GetDescendents(subRoot))
+                {
+                    //If descendents of subRoot exist in the hashEntry => only highest subRoot should exist
+                    if (hashEntry.Contains(descendent))
+                    {
+                        newResult.Remove(descendent);
+                        continue;
+                    }
+
+                    hashEntry.Add(descendent);
+                }
+            }
+
+            return newResult;
+        }
+        private static List<KnowledgeEntry> GetDescendents(KnowledgeEntry root)
+        {
+            List<KnowledgeEntry> descendents = new List<KnowledgeEntry> ();
+
+            foreach (var child in root.children_nodes)
+            {
+                descendents.Add (child);
+                descendents.AddRange(GetDescendents(child));
+            }
+            
+            return descendents;
         }
     }
 }
