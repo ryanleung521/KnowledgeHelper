@@ -146,6 +146,13 @@ namespace ClassLibrary.KnowledgeEntries
             }
 
             //Non-Root Node
+            int recussive_counter = 0;
+            while (entry.children_nodes.Count != 0)
+            {
+                RemoveEntry(entry.children_nodes[recussive_counter]);
+                recussive_counter++;
+            }
+
             entry.parent_node.children_nodes.Remove(entry);
             EntryList.Remove(entry);
             DB_Operation.DeleteEntry(entry);

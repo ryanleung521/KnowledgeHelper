@@ -104,7 +104,7 @@ namespace TestCLI
         {
             Console.WriteLine("Select the destination entry for the entry to be moved to: ");
             KnowledgeEntry new_parent;
-            Navigate_Tree(targetentry, out new_parent);
+            Navigate_Tree(targetentry.parent_node, out new_parent);
             Console.WriteLine("Destination selected");
 
             if (targetentry is not EmptyEntry && new_parent is not EmptyEntry)
@@ -251,6 +251,7 @@ namespace TestCLI
                 //Execute Commands
                 if (ExecuteCommand (CurrentNode, user_input) == true)
                 {
+                    CurrentNode = CurrentNode.parent_node;
                     return;
                 }
 
